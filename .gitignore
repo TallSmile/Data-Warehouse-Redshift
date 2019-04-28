@@ -102,5 +102,7 @@ venv.bak/
 
 # mypy
 .mypy_cache/
+
+# Project specific
+.vscode
 dwh.cfg
-.vscode/
