@@ -37,7 +37,8 @@ CREATE TABLE IF NOT EXISTS staging_events (
 	ts timestamp NULL,
 	userAgent  TEXT NULL,
 	userId  TEXT NULL
-	);
+	)
+    DISTKEY(songs);
 """)
 
 staging_songs_table_create = ("""
@@ -52,7 +53,8 @@ CREATE TABLE IF NOT EXISTS staging_songs (
 	title  TEXT NULL,
 	duration FLOAT NULL,
 	year INT NULL
-	);
+	)
+    DISTKEY(title);
 """)
 
 songplay_table_create = ("""
