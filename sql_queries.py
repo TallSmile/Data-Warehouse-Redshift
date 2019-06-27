@@ -69,7 +69,8 @@ CREATE TABLE IF NOT EXISTS songplays (
     FOREIGN KEY (artist_id) REFERENCES artists (artist_id),
     FOREIGN KEY (start_time) REFERENCES time (start_time),
     FOREIGN KEY (user_id) REFERENCES users (user_id)
-    );
+    )
+    DISTKEY(start_time);
 """)
 
 user_table_create = ("""
@@ -79,7 +80,8 @@ CREATE TABLE IF NOT EXISTS users (
     last_name  TEXT NOT NULL,
     gender  TEXT NOT NULL,
     level  TEXT NOT NULL
-    );
+    )
+    DISTSYLE ALL;
 """)
 
 song_table_create = ("""
@@ -90,7 +92,8 @@ CREATE TABLE IF NOT EXISTS songs (
     year INT NOT NULL,
     duration FLOAT NOT NULL,
     FOREIGN KEY (artist_id) REFERENCES artists (artist_id)
-    );
+    )
+    DISTSTYLE ALL;
 """)
 
 artist_table_create = ("""
@@ -100,7 +103,8 @@ CREATE TABLE IF NOT EXISTS artists (
     location  TEXT NOT NULL,
     latitude FLOAT NOT NULL,
     longitude FLOAT NOT NULL
-    );
+    )
+    DISTSTYLE ALL;
 """)
 
 time_table_create = ("""
@@ -112,7 +116,8 @@ CREATE TABLE IF NOT EXISTS time (
     month INT NOT NULL,
     year INT NOT NULL,
     weekday INT NOT NULL
-    );
+    )
+    DISTKEY(start_time);
 """)
 
 # STAGING TABLES
@@ -186,8 +191,8 @@ WHERE se.rank =1
     AND user_id = se.userId
     AND first_name = se.firstName
     AND last_name = se.lastName
-    AND gender = se.gender
-    AND level != se.level;
+    AND users.gender = se.gender
+    AND users.level != se.level;
 
 INSERT INTO users (
     user_id,
@@ -212,12 +217,12 @@ FROM (SELECT
                             ORDER BY staging_events.ts DESC) AS rank
         FROM staging_events) as se
 WHERE se.rank =1
-    AND userId IS NOT NULL
-    AND firstName IS NOT NULL
-    AND lastName IS NOT NULL
-    AND gender IS NOT NULL
-    AND level IS NOT NULL
-    AND user_id != se.userId;
+    AND se.userId IS NOT NULL
+    AND se.firstName IS NOT NULL
+    AND se.lastName IS NOT NULL
+    AND se.gender IS NOT NULL
+    AND se.level IS NOT NULL
+    AND NOT EXISTS (SELECT 1 FROM users u WHERE se.userId = u.user_id);
 END TRANSACTION;
 """)
 
@@ -229,7 +234,7 @@ INSERT INTO songs (
     year,
     duration
 )
-SELECT song_id, title, artist_id, year, duration
+SELECT DISTINCT song_id, title, artist_id, year, duration
 FROM staging_songs
 WHERE 1=1
     AND song_id IS NOT NULL
@@ -247,7 +252,7 @@ INSERT INTO artists (
     latitude,
     longitude
 )
-SELECT artist_id, artist_name, artist_location, artist_latitude, artist_longitude
+SELECT DISTINCT artist_id, artist_name, artist_location, artist_latitude, artist_longitude
 FROM staging_songs
 WHERE 1=1
     AND artist_id IS NOT NULL
@@ -281,19 +286,19 @@ FROM staging_events
 create_table_queries =  {
                             'staging_events_table': staging_events_table_create,
                             'staging_songs_table': staging_songs_table_create,
-                            'user_table': user_table_create,
-                            'artist_table': artist_table_create, 
-                            'song_table': song_table_create,
+                            'users_table': user_table_create,
+                            'artists_table': artist_table_create, 
+                            'songs_table': song_table_create,
                             'time_table': time_table_create,
-                            'songplay_table': songplay_table_create
+                            'songplays_table': songplay_table_create
                         }
 drop_table_queries ={
                         'staging_events_table':staging_events_table_drop,
                         'staging_songs_table':staging_songs_table_drop,
-                        'songplay_table':songplay_table_drop,
-                        'user_table':user_table_drop,
-                        'song_table':song_table_drop,
-                        'artist_table':artist_table_drop,
+                        'songplays_table':songplay_table_drop,
+                        'users_table':user_table_drop,
+                        'songs_table':song_table_drop,
+                        'artists_table':artist_table_drop,
                         'time_table':time_table_drop
                     }
 copy_table_queries = {
@@ -301,9 +306,9 @@ copy_table_queries = {
                         'staging_songs': staging_songs_copy
                     }
 insert_table_queries =  {
-                            'songplay_table': songplay_table_insert,
-                            'user_table': user_table_insert,
-                            'song_table': song_table_insert,
-                            'artist_table': artist_table_insert,
+                            'songplays_table': songplay_table_insert,
+                            'users_table': user_table_insert,
+                            'songs_table': song_table_insert,
+                            'artists_table': artist_table_insert,
                             'time_table': time_table_insert
                         }
