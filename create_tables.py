@@ -41,12 +41,12 @@ def main():
     # Drop specified tables
     if args.drop_table:
         for query in [q.strip() for q in args.drop_table.split(',')]:
-                if drop_table_queries.has_key(query):
+                if query in drop_table_queries:
                     execute_query(cur, conn, drop_table_queries[query])
     # Create specified tables
     if args.create_table:
         for query in [q.strip() for q in args.create_table.split(',')]:
-                if create_table_queries.has_key(query):
+                if query in create_table_queries:
                     execute_query(cur, conn, create_table_queries[query])
     
     # If arguments are not specified drop and create all tables

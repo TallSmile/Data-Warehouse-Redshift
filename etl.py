@@ -41,13 +41,13 @@ def main():
     # Copy specified tables
     if args.copy_table:
         for query in [q.strip() for q in args.copy_table.split(',')]:
-                if copy_table_queries.has_key(query):
+                if query in copy_table_queries:
                     execute_query(cur, conn, copy_table_queries[query])
 
     # insert specified tables
     if args.insert_table:
         for query in [q.strip() for q in args.insert_table.split(',')]:
-                if insert_table_queries.has_key(query):
+                if query in insert_table_queries:
                     execute_query(cur, conn, insert_table_queries[query])
 
     # Without command line arguments load and insert all tables
