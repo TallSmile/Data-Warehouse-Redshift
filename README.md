@@ -1,88 +1,105 @@
-# Project Title
+# Data Warehouse in Redshift
 
-One Paragraph of project description goes here
+The purpose of this project is to analyze data simulated by [eventsim](https://github.com/Interana/eventsim). The simulated data consists of songs and user activity from music streaming app. The main goal of the project is to  create a redshift database with tables designed to optimize queries on song play analysis. Using the song and log datasets, an ETL pipeline is used to create star schema for this analysis.
 
 ## Getting Started
 
-These instructions will get you a copy of the project up and running on your local machine for development and testing purposes. See deployment for notes on how to deploy the project on a live system.
-
-### Prerequisites
-
-What things you need to install the software and how to install them
-
-```
-Give examples
-```
-
-### Installing
-
-A step by step series of examples that tell you how to get a development env running
-
-Say what the step will be
-
-```
-Give the example
-```
-
-And repeat
-
-```
-until finished
-```
-
-End with an example of getting some data out of the system or using it for a little demo
-
-## Running the tests
-
-Explain how to run the automated tests for this system
-
-### Break down into end to end tests
-
-Explain what these tests test and why
-
-```
-Give an example
-```
-
-### And coding style tests
-
-Explain what these tests test and why
-
-```
-Give an example
-```
+Before proceeding with deployment please create a AWS redshift instance with read access to S3 storage.
 
 ## Deployment
 
-Add additional notes about how to deploy this on a live system
+The project should be deployed on AWS. Configuration variables are read from `dwh.cfg`.
 
-## Built With
+* Copy example configuration file and fill it in.
 
-* [Dropwizard](http://www.dropwizard.io/1.0.2/docs/) - The web framework used
-* [Maven](https://maven.apache.org/) - Dependency Management
-* [ROME](https://rometools.github.io/rome/) - Used to generate RSS Feeds
+```Shell
+cp dwh.example.cfg dwh.cfg
+```
 
-## Contributing
+* Create tables in DW.
 
-Please read [CONTRIBUTING.md](https://gist.github.com/PurpleBooth/b24679402957c63ec426) for details on our code of conduct, and the process for submitting pull requests to us.
+```Shell
+python create_tables.py
+```
 
-## Versioning
+* Run ETL pipeline.
 
-We use [SemVer](http://semver.org/) for versioning. For the versions available, see the [tags on this repository](https://github.com/your/project/tags). 
+```Shell
+python etl.py
+```
 
-## Authors
+> Note that you can use debugging flag ( `python -D`... ) to see SQL commands that are executed. In addition, you can use command line arguments in order to execute only specific commands ( see `python create_tables.py -h` and `python etl.py -h` )
 
-* **Billie Thompson** - *Initial work* - [PurpleBooth](https://github.com/PurpleBooth)
+## Schema for Song Play Analysis
 
-See also the list of [contributors](https://github.com/your/project/contributors) who participated in this project.
+Below is presented the schema of sparkifydb. In order to optimize queries for song play analysis and reduce data duplication, **star scheme** is used in this DB.
+
+> Note that schema is distributed in a way to optimize queries on `songplays` table. Dimension tables are distributed to all nodes in the cluster.
+
+### Fact Table
+
+Records in log data associated with song plays i.e. records with page NextSong
+
+| **songplays** | KEY|
+|---------------|---:|
+| songplay_id   |  PK|
+| start_time    |  FK|
+| user_id       |  FK|
+| level         |    |
+| song_id       |  FK|
+| artist_id     |  FK|
+| session_id    |    |
+| location      |    |
+| user_agent    |    |
+
+### Dimension Tables
+
+Users in the app
+
+| **users** |KEY|
+|-----------|--:|
+| user_id   | PK|
+| first_name|   |
+| last_name |   |
+| gender    |   |
+| level     |   |
+
+Songs in music database
+
+| **songs** |KEY|
+|-----------|--:|
+| song_id   | PK|
+| title     |   |
+| artist_id | FK|
+| year      |   |
+| duration  |   |
+
+Artists in music database
+
+| **artists**  | KEY|
+|--------------|---:|
+| artist_id    | PK |
+| name         |    |
+| location     |    |
+| lattitude    |    |
+| longitude    |    |
+
+Timestamps of records in songplays broken down into specific units
+
+| **time**     | KEY|
+|--------------|---:|
+| start_time   | PK |
+| hour         |    |
+| day          |    |
+| week         |    |
+| month        |    |
+| year         |    |
+| weekday      |    |
+
+## TODO
+
+Allow programmic creation of Redshift cluster by finish `create_cluter.py` script.
 
 ## License
 
 This project is licensed under the MIT License - see the [LICENSE.md](LICENSE.md) file for details
-
-## Acknowledgments
-
-* Hat tip to anyone whose code was used
-* Inspiration
-* etc
-
