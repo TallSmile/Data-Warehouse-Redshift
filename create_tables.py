@@ -4,15 +4,25 @@ from sql_queries import create_table_queries, drop_table_queries
 import argparse
 
 def drop_tables(cur, conn):
+    """
+    Drop all tables.
+    """
     for query in drop_table_queries.values():
         execute_query(cur, conn, query)
 
 
 def create_tables(cur, conn):
+    """
+    Create all tables.
+    """
     for query in create_table_queries.values():
         execute_query(cur, conn, query)
 
 def execute_query(cur, conn, query):
+    """
+    Execute specified SQL query.
+    Used by command line parameters.
+    """
     if __debug__:
         print("Executing ================================ Query")
         print(query)
@@ -20,6 +30,9 @@ def execute_query(cur, conn, query):
     conn.commit()
 
 def main():
+    """
+    Entry point of create tables script.
+    """
     parser = argparse.ArgumentParser()
     parser.add_argument('-c','--create_table',
                         help='Execute specified create table statements.',

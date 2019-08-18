@@ -4,15 +4,25 @@ from sql_queries import copy_table_queries, insert_table_queries
 import argparse
 
 def load_staging_tables(cur, conn):
+    """
+    Copy song data and log data into staging tables.
+    """
     for query in copy_table_queries.values():
         execute_query(cur, conn, query)
 
 
 def insert_tables(cur, conn):
+    """
+    Populate sparkify tables from staging tables.
+    """
     for query in insert_table_queries.values():
         execute_query(cur, conn, query)
 
 def execute_query(cur, conn, query):
+    """
+    Execute specified SQL query.
+    Used 
+    """
     if __debug__:
         print("Executing ================================ Query")
         print(query)
@@ -20,6 +30,9 @@ def execute_query(cur, conn, query):
     conn.commit()
 
 def main():
+    """
+    Entry point of ETL script.
+    """
     parser = argparse.ArgumentParser()
     parser.add_argument('-c','--copy_table',
                         help='Execute specified copy table statements.',

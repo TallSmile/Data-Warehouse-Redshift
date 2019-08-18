@@ -38,7 +38,7 @@ CREATE TABLE IF NOT EXISTS staging_events (
 	userAgent  TEXT NULL,
 	userId  TEXT NULL
 	)
-    DISTKEY(songs);
+    DISTKEY(song);
 """)
 
 staging_songs_table_create = ("""
@@ -83,7 +83,7 @@ CREATE TABLE IF NOT EXISTS users (
     gender  TEXT NOT NULL,
     level  TEXT NOT NULL
     )
-    DISTSYLE ALL;
+    DISTSTYLE ALL;
 """)
 
 song_table_create = ("""
